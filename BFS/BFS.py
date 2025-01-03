@@ -10,10 +10,28 @@ from IPython.display import Image
 
 from collections import deque
 
+def dfs(img, pos, labels, count):
+    stack = [pos]  
+    labels[pos] = count
+    total_pixel = 1  
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    while stack:
+        x, y = stack.pop() 
+
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(img) and 0 <= ny < len(img[0]) and img[x, y] == img[nx, ny] and labels[nx, ny] == 0:
+                labels[nx, ny] = count  
+                stack.append((nx, ny))  
+                total_pixel += 1 
+
+    return total_pixel
+
 def bfs(img, pos, labels, count):
     queue = deque([pos])
     labels[pos] = count
-    total_pixel = 0
+    total_pixel = 1
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
     while queue:
         x, y = queue.popleft()
