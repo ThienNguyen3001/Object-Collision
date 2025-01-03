@@ -91,6 +91,7 @@ def bfs_obj_collision(video_path,min_objPixel = 10, debug = False):
                 curr_area = objects[i][4]
                 if tracking_colision(curr_area,previous_objects):
                     print(f"Chạm nhau tại: {current_time_ms}, Frame: {frame_count}")
+                    break
         
         previous_objects = objects
             
