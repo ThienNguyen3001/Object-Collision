@@ -1,92 +1,79 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-from pytictoc import TicToc
+from skimage.filters import gaussian
 from skimage.segmentation import active_contour
 
-def calculate_area(contour):
-    return cv2.contourArea(contour)
-
-def preprocess_frame(frame):
+def process_frame_watershed(frame):
+    """
+    Xử lý frame và trả về markers, tọa độ markers và bán kính
+    """
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    ret, binary = cv2.threshold(gray, 147, 255, cv2.THRESH_BINARY)
-    contours, hierachy = cv2.findContours(binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)
     
-    max_area = 0.5 * frame.shape[0] * frame.shape[1]
-    filtered_contours = [contour for contour in contours if cv2.contourArea(contour) < max_area]
+    # Ngưỡng để phân tách đối tượng
+    _, binary = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
+    
+    # Áp dụng morphology để tách các đối tượng chạm nhau
+    kernel = np.ones((3, 3), np.uint8)
+    opening = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel, iterations=2)
+    
+    # Background rõ ràng
+    sure_bg = cv2.dilate(opening, kernel, iterations=3)
+    
+    # Foreground rõ ràng
+    dist_transform = cv2.distanceTransform(opening, cv2.DIST_L2, 5)
+    _, sure_fg = cv2.threshold(dist_transform, 0.4 * dist_transform.max(), 255, 0)
+    sure_fg = np.uint8(sure_fg)
+    
+    # Vùng không chắc chắn
+    unknown = cv2.subtract(sure_bg, sure_fg)
+    
+    # Gán nhãn cho vùng foreground
+    _, markers = cv2.connectedComponents(sure_fg)
+    markers = markers + 1
+    markers[unknown == 255] = 0
+    
+    # Áp dụng watershed
+    markers = cv2.watershed(frame, markers)
+    
+    # Lấy unique markers (bỏ qua background (-1) và unknown (0))
+    unique_markers = np.unique(markers)[2:]
+    
+    centroids = []
+    radii = []
+    
+    for marker in unique_markers:
+        mask = np.uint8(markers == marker)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        M = cv2.moments(contours[0])
+        if M["m00"] != 0:
+            cx = int(M["m10"] / M["m00"])
+            cy = int(M["m01"] / M["m00"])
+            centroids.append((cx, cy))
+            
+            # Tính bán kính gần đúng từ contour
+            radius = np.sqrt(cv2.contourArea(contours[0]) / np.pi)
+            radii.append(radius)
+    
+    return centroids, radii
 
-    return filtered_contours
-
-def detect_collision_by_area(contours, previous_total_area, threshold=100):
-    total_area = sum(calculate_area(contour) for contour in contours)
-    if abs(total_area - previous_total_area) > threshold:
-        return True, total_area
-    return False, total_area
-
-def check_collision_active_contour_video(video_path, output_path):
-    cap = cv2.VideoCapture(video_path)
-    frame_number = 0
-    t = TicToc()
-    t.tic()
-
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    frame_size = (width, height)
-
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
-
-    previous_total_area = 0
-
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        #contours = preprocess_frame(frame)
-        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # ret, binary = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        # contours, hierarchy = cv2.findContours(binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)
-
-        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # ret, binary = cv2.threshold(gray, 147, 255, cv2.THRESH_BINARY)
-        # contours, hierachy = cv2.findContours(binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
-        # collision_detected, current_total_area = detect_collision_by_area(contours, previous_total_area)
-
-        # # Loại bỏ các contour có diện tích lớn hơn ngưỡng
-        # max_area = 0.5 * frame.shape[0] * frame.shape[1]
-        # filtered_contours = [contour for contour in contours if cv2.contourArea(contour) < max_area]
-        
-        # result_img = frame.copy()
-        # for contour in filtered_contours:  # Chỉ vẽ contour đã lọc
-        #     cv2.drawContours(result_img, [contour], -1, (0, 255, 0), 10)
-        filtered_contours = preprocess_frame(frame)
-        collision_detected, current_total_area = detect_collision_by_area(filtered_contours, previous_total_area)
-
-        result_img = frame.copy()
-        for contour in filtered_contours:
-            cv2.drawContours(result_img, [contour], -1, (0, 255, 0), 10)
-
-        # result_img = frame.copy()
-        # for contour in contours:
-        #     cv2.drawContours(result_img, [contour], -1, (0, 255, 0), 2)
-
-        status_text = "Collision Detected!" if collision_detected else "No Collision"
-        cv2.putText(result_img, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255) if collision_detected else (0, 255, 0), 2)
-        cv2.putText(result_img, f"Frame: {frame_number}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-
-        out.write(result_img)
-
-        if collision_detected:
-            collision_time = frame_number / fps
-            print(f"Collision detected at frame {frame_number} ({collision_time:.2f} seconds)")
-
-        previous_total_area = current_total_area
-        frame_number += 1
-
-    cap.release()
-    out.release()
-    t.toc()
-    print(f"Processed {frame_number} frames. Output saved to {output_path}.")
+def apply_active_contour(image, centroids, radii):
+    """Tạo snakes từ dữ liệu centroid và bán kính"""
+    snakes = []
+    s = np.linspace(0, 2 * np.pi, 400)
+    for (cx, cy), radius in zip(centroids, radii):
+        init_snake = np.array([cy + radius * np.sin(s), cx + radius * np.cos(s)]).T
+        snake = active_contour(
+            image,
+            init_snake,
+            alpha=0.015,
+            beta=0.1,
+            gamma=0.001,
+            w_line=0,
+            w_edge=1,
+            max_px_move=1.0,
+            max_num_iter=2500,
+            convergence=0.1,
+            boundary_condition='periodic'
+        )
+        snakes.append(snake)
+    return snakes
