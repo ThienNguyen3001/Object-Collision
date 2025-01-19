@@ -1,15 +1,11 @@
 import os
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
-
-
-
-from IPython.display import Image
-
+from zipfile import ZipFile
+from urllib.request import urlretrieve
 from collections import deque
 
-def dfs(img, pos, labels, count):
+def __dfs(img, pos, labels, count):
     stack = [pos]  
     labels[pos] = count
     total_pixel = 1  
@@ -27,7 +23,7 @@ def dfs(img, pos, labels, count):
 
     return total_pixel
 
-def dfs_object_detection(binary_frame, min_objPixel = 10, max_distance=50):
+def __dfs_object_detection(binary_frame, min_objPixel = 10, max_distance=50):
     rows, cols = binary_frame.shape
     labels = np.zeros((rows,cols), dtype=int)
     
@@ -37,7 +33,7 @@ def dfs_object_detection(binary_frame, min_objPixel = 10, max_distance=50):
     for x in range(rows):
         for y in range(cols):
             if binary_frame[x,y] > 0 and labels[x,y] == 0:
-                pixels = dfs(binary_frame, (x,y), labels, count)    
+                pixels = __dfs(binary_frame, (x,y), labels, count)    
                 if pixels >= min_objPixel:
                     xs, ys = np.where(labels == count)
                     if len(xs) > 0 and len(ys) > 0:
@@ -48,7 +44,7 @@ def dfs_object_detection(binary_frame, min_objPixel = 10, max_distance=50):
 
     return object
 
-def bfs(img, pos, labels, count):
+def __bfs(img, pos, labels, count):
     queue = deque([pos])
     labels[pos] = count
     total_pixel = 1
@@ -65,7 +61,7 @@ def bfs(img, pos, labels, count):
 
     return total_pixel
 
-def bfs_object_detection(binary_frame, min_objPixel = 10, max_distance=50):
+def __bfs_object_detection(binary_frame, min_objPixel = 10, max_distance=50):
     rows, cols = binary_frame.shape
     labels = np.zeros((rows,cols), dtype=int)
     
@@ -75,7 +71,7 @@ def bfs_object_detection(binary_frame, min_objPixel = 10, max_distance=50):
     for x in range(rows):
         for y in range(cols):
             if binary_frame[x,y] > 0 and labels[x,y] == 0:
-                pixels = bfs(binary_frame, (x,y), labels, count)    
+                pixels = __bfs(binary_frame, (x,y), labels, count)    
                 if pixels >= min_objPixel:
                     xs, ys = np.where(labels == count)
                     if len(xs) > 0 and len(ys) > 0:
@@ -86,7 +82,7 @@ def bfs_object_detection(binary_frame, min_objPixel = 10, max_distance=50):
 
     return object
 
-def tracking_colision(curr_area,pre_obj, tolerance_pixel=20):
+def __tracking_colision(curr_area,pre_obj, tolerance_pixel=20):
     for i in range(len(pre_obj)):
         for j in range(i+1, len(pre_obj)):
             pre_area1 = pre_obj[i][4]
@@ -121,13 +117,13 @@ def bfs_obj_collision(video_path, min_objPixel = 10, debug = False):
         _, binary = cv2.threshold(blurred, 147, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
         #Tìm đối tượng
-        objects = bfs_object_detection(binary, min_objPixel)
+        objects = __bfs_object_detection(binary, min_objPixel)
         
         #có sự thay đổi thì tracking
         if len(objects) < len(previous_objects):
             for i in range(len(objects)):
                 curr_area = objects[i][4]
-                if tracking_colision(curr_area,previous_objects):
+                if __tracking_colision(curr_area,previous_objects):
                     print(f"Chạm nhau tại: {current_time_ms}, Frame: {frame_count}")
                     break
         
@@ -171,13 +167,13 @@ def dfs_obj_collision(video_path, min_objPixel = 10, debug = False):
         _, binary = cv2.threshold(blurred, 147, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
         #Tìm đối tượng
-        objects = dfs_object_detection(binary, min_objPixel)
+        objects = __dfs_object_detection(binary, min_objPixel)
         
         #có sự thay đổi thì tracking
         if len(objects) < len(previous_objects):
             for i in range(len(objects)):
                 curr_area = objects[i][4]
-                if tracking_colision(curr_area,previous_objects):
+                if __tracking_colision(curr_area,previous_objects):
                     print(f"Chạm nhau tại: {current_time_ms}, Frame: {frame_count}")
                     break
         
