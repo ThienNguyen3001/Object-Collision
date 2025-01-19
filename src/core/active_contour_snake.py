@@ -25,11 +25,20 @@ def active_contour_snake(image, centroids, radii):
         snakes.append(snake)
     return snakes
 
-def check_collision(centroids, snakes,radii, debug =False):
-    # Kiểm tra va chạm giữa các vật thể
+def collision_snake(snakes, threshold):
     collisions = []
-    for i in range(len(centroids)):
-        for j in range(i + 1, len(centroids)):
-            dist = np.linalg.norm(np.array(centroids[i]) - np.array(centroids[j]))
-            if dist < (radii[i] + radii[j]) + 2:
-                collisions.append((i, j))
+    for i in range(len(snakes)):
+        for j in range(i + 1, len(snakes)):
+            min_distance = np.inf  #dist tối thiểu
+            for point_i in snakes[i]:
+                for point_j in snakes[j]:
+                    dist = np.linalg.norm(point_i - point_j)
+                    if dist < min_distance:
+                        min_distance = dist
+                        
+            if min_distance < threshold:
+                # collisions.append((i, j))
+                return True
+    return False
+    
+    
