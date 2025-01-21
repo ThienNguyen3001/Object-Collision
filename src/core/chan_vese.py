@@ -3,7 +3,7 @@ import numpy as np
 from skimage.segmentation import chan_vese
 from skimage.measure import label
 
-def chan_vese(frame):
+def chan_vese_collision(frame):
     '''
         Hàm chan-vese dùng để segment vùng nền và vùng chứa đối tượng trong ảnh
         Input:
