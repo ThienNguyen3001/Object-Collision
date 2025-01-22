@@ -10,4 +10,3 @@ watershed:              process_frame_watershed
 active_contour_snake:   active_contour_snake, collision_snake
 simulation:             Simulation_Methods
 """
-

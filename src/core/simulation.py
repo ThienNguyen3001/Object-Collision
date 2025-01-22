@@ -33,9 +33,9 @@ def create_balls(n, WIDTH, HEIGHT,ColorBall):
     for _ in range(n):
         x = random.randint(50, WIDTH - 50)
         y = random.randint(50, HEIGHT - 50)
-        dx = random.choice([2, -2])
-        dy = random.choice([2, -2])
-        radius = random.randint(15, 30)
+        dx = 5
+        dy = 5
+        radius = random.randint(25, 35)
         if ColorBall == None:
             color = tuple(random.randint(0, 255) for _ in range(3))  
         else:
