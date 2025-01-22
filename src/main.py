@@ -11,4 +11,3 @@ active_contour_snake:   active_contour_snake, collision_snake
 simulation:             Simulation_Methods
 """
 
-simulation.Simulation_Methods(3,ColorBall=(0,0,0))
