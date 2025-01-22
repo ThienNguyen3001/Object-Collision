@@ -28,7 +28,7 @@ class Ball:
         cv2.circle(frame, (int(self.x), int(self.y)), self.radius, self.color, -1)
 
 # Tạo danh sách ngẫu nhiên các quả bóng
-def create_balls(n, WIDTH, HEIGHT):
+def create_balls(n, WIDTH, HEIGHT,ColorBall):
     balls = []
     for _ in range(n):
         x = random.randint(50, WIDTH - 50)
@@ -36,7 +36,10 @@ def create_balls(n, WIDTH, HEIGHT):
         dx = random.choice([2, -2])
         dy = random.choice([2, -2])
         radius = random.randint(15, 30)
-        color = tuple(random.randint(0, 255) for _ in range(3))  
+        if ColorBall == None:
+            color = tuple(random.randint(0, 255) for _ in range(3))  
+        else:
+            color = ColorBall
         balls.append(Ball(x, y, dx, dy, radius, color, WIDTH, HEIGHT))
     return balls
 
@@ -62,7 +65,7 @@ def check_collision(ball1, ball2):
         ball2.x += overlap * cos
         ball2.y += overlap * sin
 
-def Simulation_Methods(n, background, DURATION = 3, WIDTH = 600, HEIGHT = 400):
+def Simulation_Methods(n, background = (255,255,255), DURATION = 3, WIDTH = 600, HEIGHT = 400, ColorBall = None):
     # Thiết lập thông số video
     FPS = 30
     FRAMES = DURATION * FPS
@@ -79,7 +82,7 @@ def Simulation_Methods(n, background, DURATION = 3, WIDTH = 600, HEIGHT = 400):
     out = cv2.VideoWriter(video_path, fourcc, FPS, (WIDTH, HEIGHT))
 
     # Khởi tạo n quả bóng ngẫu nhiên
-    balls = create_balls(n,WIDTH,HEIGHT)
+    balls = create_balls(n,WIDTH,HEIGHT,ColorBall)
 
     # Tạo các khung hình
     for frame_index in range(FRAMES):
