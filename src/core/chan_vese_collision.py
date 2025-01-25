@@ -15,7 +15,7 @@ def chan_vese_collision(frame):
         sẽ va chạm. 
     '''
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    cv_result = chan_vese(gray_frame, mu=0.25, lambda1=30, lambda2=30, tol=1e-2, max_num_iter=8, extended_output=True)
+    cv_result = chan_vese(gray_frame, mu=0.25, lambda1=20, lambda2=35, tol=1e-2, max_num_iter=10, extended_output=True)
     phi = cv_result[1]
     contour_mask = phi > 1
     labeled_contours, num_features = label(contour_mask, return_num=True)
