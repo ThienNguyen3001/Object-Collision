@@ -97,7 +97,7 @@ Follow the steps below to set up the project:
    - **Multi-Color Images**: Performance improves by utilizing color information, but instability and sudden spikes in processing time make the algorithm less optimal.  
 
 ### Result Visualization:
-- Performance metrics, including processing times and segmentation accuracy, are stored in the `results/Chan-vese_csv/` and `results/Watershed-ACM_csv/` directories.  
+- Performance metrics and including processing times, are stored in the `results/Chan-vese_csv/` and `results/Watershed-ACM_csv/` directories.  
 - Plots illustrating processing time trends and algorithm comparison are saved in the `results/plots/` folder, generated from CSV data.  
 
 ---
