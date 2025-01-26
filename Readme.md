@@ -59,7 +59,7 @@ Follow the steps below to set up the project:
 
 1. **Clone the repository**:  
    ```bash
-   git clone https://github.com/Sura3607/Integrated_Image_Segmentation-Based_Solution_for_Object-Collision_Detection_in_2D_Simulation_Environ.git
+   git clone _https://github.com/Sura3607/Integrated_Image_Segmentation-Based_Solution_for_Object-Collision_Detection_in_2D_Simulation_Environ.git_
    cd your-repo-name
    ```
 
