@@ -45,7 +45,8 @@ Key findings highlight the trade-offs between algorithmic complexity and real-ti
 │   └── main.py                     # Application entry point
 │           
 ├── experiments/                    # Experiment configurations and notes
-│   └── experiment.md               # Experiment details
+│   ├── experiment.ipynb            # Performance evaluation.
+│   └── Readme.md                   # Experiment details
 │           
 ├── README.md                       # Project documentation
 └── requirements.txt                # Required Python libraries
