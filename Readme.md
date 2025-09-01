@@ -63,7 +63,7 @@ If you use this research in your work, please refer to the original paper.
 
 ```
 @article{huy2025integrated,
-  title={Integrated image segmentation-based solution for object collision detection in 2d simulation environments},
+  title={Integrated image segmentation-based solution for object collision detection in 2D simulation environments},
   author={Huy, Trần Viết Gia and {\DJ}{\^o}ng, Dương Quang and Nhựt, Nguyễn Minh and Hưởng, Nguyễn Trọng and Thiện, Nguyễn Ngọc},
   year={2025},
   publisher={University of Economics Ho Chi Minh City}
